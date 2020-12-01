@@ -1,5 +1,11 @@
 #include <stdio.h>
 
+/**
+ * Calcula o período de tempo em que a simulação executará.
+ * @param days representa tempo de simulação em dias.
+ * @param hours representa as horas que serão utilizadas durante o dia.
+ * @return período de tempo em horas em que a simulação executará.
+*/
 int getPeriod(int days, int hours) {
   return days * hours;
 }
@@ -34,7 +40,7 @@ int main(void) {
   FILE *csv_file = fopen("results.csv", "w+");
 
   if (csv_file == NULL) {
-    printf("Houve um problema ao abrir o arquivo!\n");
+    printf("Houve um problema ao criar o arquivo!\n");
     
     return 0;
   }

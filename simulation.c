@@ -37,6 +37,34 @@ void calculateConstants(Constants *constants, Parameters *parameters, Aux *aux) 
   constants->k = parameters->m_k / (parameters->n_k * parameters->T_k);
 }
 
+void calculateSimulationData(
+  Aux *aux,
+  Parameters *parameters,
+  Constants *constants,
+  Results *results,
+  int time_interval,
+  int time_extra,
+  int index
+) {
+  if (index != 0 && parameters->simulation_period > time_interval) {
+    if (index == 1) {
+      aux->b = parameters->N_b / ((parameters->T_b + time_extra) * parameters->S_bi * parameters->I_bi);
+    } else {
+      aux->k = parameters->m_k / (parameters->n_k * (parameters->T_k + time_extra));
+    }
+  }
+
+  aux->S = results->S;
+  aux->I = results->I;
+  aux->R = results->R;
+
+  results->S = aux->S - parameters->h * aux->b * aux->S * aux->I;
+  results->I = aux->I + parameters->h * (aux->b * aux->S * aux->I - aux->k * aux->I);
+  results->R = aux->R + parameters->h * aux->k * aux->I;
+  results->M = results->R * 2 / 100;
+  results->time = results->time + parameters->h;
+}
+
 int startSimulation(Aux *aux, Parameters *parameters, Constants *constants, Results *results) {
   for (int i = 0; i < 3; i++) {
     FILE *file;
@@ -80,53 +108,30 @@ int startSimulation(Aux *aux, Parameters *parameters, Constants *constants, Resu
     int size = parameters->simulation_period / parameters->h;
     int count = 0;
 
-    Results *results_vetor = calloc(size, sizeof(Results));
+    Results *results_vector = calloc(size, sizeof(Results));
 
     fprintf(file, "%lf, %lf, %lf, 0, %lf\n", parameters->S, parameters->I, parameters->R, results->time);
 
     while (results->time < parameters->simulation_period) {
       calculateSimulationData(aux ,parameters, constants, results, time_interval, time_extra, i);
 
-      fprintf(file, "%lf, %lf, %lf, %lf, %lf\n", results->S, results->I, results->R, results->M, results->time);
-      results_vetor[count].S = results->S;
-      results_vetor[count].I = results->I;
-      results_vetor[count].R = results->R;
-      results_vetor[count].M = results->M;
-      results_vetor[count].time = results->time;
+      results_vector[count] = *results;
 
-      // printf("%lf", results_vetor[count].S);
       count++;
     }
-    // printf("%i, %i, %i\n", time_interval, time_extra, i);
-    printf("%lf\n", results_vetor[1000].S);
 
-    free(results_vetor);
+    for (int i = 0; i < size; i++) {
+      fprintf(file, "%lf, %lf, %lf, %lf, %lf\n",
+        results_vector[i].S,
+        results_vector[i].I,
+        results_vector[i].R,
+        results_vector[i].M,
+        results_vector[i].time
+      );
+    }
+
+    free(results_vector);
 
     fclose(file);
   }
-}
-
-void calculateSimulationData(
-  Aux *aux,
-  Parameters *parameters,
-  Constants *constants,
-  Results *results,
-  int time_interval,
-  int time_extra,
-  int index
-) {
-  if (index != 0 && parameters->simulation_period < time_interval) {
-    aux->b = parameters->N_b / ((parameters->T_b + time_extra) * parameters->S_bi * parameters->I_bi);
-    aux->k = parameters->m_k / (parameters->n_k * (parameters->T_k + time_extra));
-  }
-
-  aux->S = results->S;
-  aux->I = results->I;
-  aux->R = results->R;
-
-  results->S = aux->S - parameters->h * aux->b * aux->S * aux->I;
-  results->I = aux->I + parameters->h * (aux->b * aux->S * aux->I - aux->k * aux->I);
-  results->R = aux->R + parameters->h * aux->k * aux->I;
-  results->M = results->R * 2 / 100;
-  results->time = results->time + parameters->h;
 }

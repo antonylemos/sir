@@ -1,7 +1,13 @@
+/// @file simulation.c
 #include <stdio.h>
 #include <stdlib.h>
 #include "simulation.h"
 
+/**
+ * Lê o arquivo de parâmetros e salva seus dados em structs.
+ * @param parameters Struct de parâmetros.
+ * @param results Struct de resultados.
+*/
 int readFile(Parameters *parameters, Results *results) {
   FILE *file = fopen("data.txt", "r");
 
@@ -32,11 +38,26 @@ int readFile(Parameters *parameters, Results *results) {
   fclose(file);
 }
 
+/**
+ * Calcula as constantes 'b' e 'k'.
+ * @param constants Struct de constantes.
+ * @param parameters Struct de parâmetros.
+*/
 void calculateConstants(Constants *constants, Parameters *parameters, Aux *aux) {
   constants->b = parameters->N_b / (parameters->T_b * parameters->S_bi * parameters->I_bi);
   constants->k = parameters->m_k / (parameters->n_k * parameters->T_k);
 }
 
+/**
+ * Calcula os dados S, I, R e M da simulação.
+ * @param aux Struct de valores auxiliares.
+ * @param parameters Struct de parâmetros.
+ * @param constants Struct de constantes.
+ * @param results Struct de resultados.
+ * @param time_interval Intervalo de tempo para que o novo cenário inicie.
+ * @param time_extra Tempo que será adicionado em T_b e T_k ao iniciar o novo cenário.
+ * @param index Índice de iteração do laço.
+*/
 void calculateSimulationData(
   Aux *aux,
   Parameters *parameters,
@@ -65,6 +86,13 @@ void calculateSimulationData(
   results->time = results->time + parameters->h;
 }
 
+/**
+ * Inicia a simulação definindo os parâmetros iniciais.
+ * @param aux Struct de valores auxiliares.
+ * @param parameters Struct de parâmetros.
+ * @param constants Struct de constantes.
+ * @param results Struct de resultados.
+*/
 int startSimulation(Aux *aux, Parameters *parameters, Constants *constants, Results *results) {
   for (int i = 0; i < 3; i++) {
     FILE *file;

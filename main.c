@@ -1,7 +1,11 @@
+/// @file main.c
 #include <stdio.h>
 #include <stdlib.h>
 #include "simulation.h"
 
+/**
+ * Função de entrada do programa.
+*/
 int main(void) {
   printf ("Simulação Epidemiológica (SIR)\n");
 
